@@ -5,3 +5,4 @@ screeninfo
 opencv-python
 openpyxl
 pandas
+PIL

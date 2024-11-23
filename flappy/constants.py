@@ -14,8 +14,9 @@ LOGO_IMAGE_PATH = "images/logo.png"
 SCHOOL_IMAGE_PATH = "images/NHPS.png"
 FONT_FILE_PATH = "res/JurassicPark.otf"
 SPRITE_PIPES = "images/pipe.png"
-SPRITE_BIRD = "images/pterodactyl.png"
+SPRITE_BIRD = "images/pterodactyl.gif"
 SPRITE_LOGO = "images/logo.png"
+
 
 # Default messages
 LEADERBOARD_LOAD_ERROR = ["Error loading leaderboard data."]

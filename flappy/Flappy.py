@@ -1,244 +1,301 @@
-import time
-import random
-import pygame
-import cv2 as cv
-import mediapipe as mp
-from collections import deque, namedtuple
-from PIL import Image, ImageSequence
+import tkinter as tk
+from tkinter import ttk
+from PIL import Image, ImageTk
+import pandas as pd
+from typing import List, Optional, Dict, Any
+from screeninfo import get_monitors
+from UserForm import UserForm
+from constants import (
+    FONT_FAMILY,
+    BACKGROUND_COLOR,
+    BUTTON_COLOR,
+    TEXT_COLOR,
+    EXCEL_FILE_PATH,
+    LOGO_IMAGE_PATH,
+    SCHOOL_IMAGE_PATH,
+    FONT_FILE_PATH,
+)
+import pyglet
+from GameEngine import run_game
 
+class Flappy:
+    def __init__(self, root: tk.Tk) -> None:
+        self.root: tk.Tk = root
+        self.excel_file: str = EXCEL_FILE_PATH
+        self.logo_path: str = LOGO_IMAGE_PATH
+        self.font_file: str = FONT_FILE_PATH
+        self.leaderboard_data: List[str] = []
 
-SPRITE_PIPES = "images/pipe.png"
+        # Configure main window
+        self.root.configure(background=BACKGROUND_COLOR)
+        pyglet.font.add_file(self.font_file)
 
-SPRITE_BIRD = "images/pterodactyl.gif"
+        # Configure window dimensions based on primary monitor resolution
+        monitor = get_monitors()[0]
+        self.window_width: int = monitor.width
+        self.window_height: int = monitor.height
+        self.root.geometry(f"{self.window_width}x{self.window_height}")
+        self.root.title("Flappy")
+        self.root.resizable(True, True)
 
+        # Load leaderboard data
+        self.leaderboard_data = self.manage_leaderboard()
 
-class Bird:
-    window_size = None
+        # Create UI elements
+        self.create_widgets()
 
-    IMAGE = namedtuple('image', ['frame', 'rect'])
-    def __init__(self, window_size):
-        Bird.window_size = window_size
-        self.current_frame = 0
-        self.images = Bird.__loadGIF(SPRITE_BIRD)
-        self.frame_count = len(self.images)
+    def manage_leaderboard(self, user_data: Optional[Dict[str, Any]] = None) -> List[Dict[str, str]]:
+        """
+        Manage the leaderboard by reading, updating, and returning leaderboard data.
+        """
+        try:
+            # Load existing leaderboard data or initialize an empty DataFrame
+            try:
+                df: pd.DataFrame = pd.read_excel(
+                    self.excel_file, engine="openpyxl", converters={"Class": str, "Section": str}
+                )
+                df = df.fillna("Not Applicable")
+            except FileNotFoundError:
+                print("Leaderboard file not found. Creating a new one.")
+                df = pd.DataFrame(columns=["Type", "Name", "Class", "Section", "Score"])
 
+            if user_data:
+                # Add new entry and remove duplicates
+                new_entry: Dict[str, Any] = {
+                    "Type": user_data["Role"],
+                    "Name": user_data["Name"],
+                    "Class": user_data.get("Class", "N/A"),
+                    "Section": user_data.get("Section", "N/A"),
+                    "Score": user_data["Score"],
+                }
+                df = pd.concat([df, pd.DataFrame([new_entry])], ignore_index=True)
+                df = df.sort_values("Score", ascending=False).drop_duplicates(
+                    subset=["Name", "Class", "Section"], keep="first"
+                )
+                df.to_excel(self.excel_file, index=False, engine="openpyxl")
+                print("Leaderboard updated successfully.")
 
-    @staticmethod
-    def __pilImageToSurface(pilImage):
-        mode, size, data = pilImage.mode, pilImage.size, pilImage.tobytes()
-        return pygame.image.fromstring(data, size, mode).convert_alpha()
+            # Return leaderboard data as a list of dictionaries for display
+            leaderboard_data: List[Dict[str, str]] = df.sort_values("Score", ascending=False).to_dict(orient="records")
+            return leaderboard_data
 
-    @staticmethod
-    def __loadGIF(filename):
-        def make_frame(image):
-            pygame_image = pygame.transform.scale(Bird.__pilImageToSurface(image), (75, 55))
-            rect = pygame_image.get_rect()
-            rect.center = (Bird.window_size[0] // 6, Bird.window_size[1] // 2)
-            return Bird.IMAGE(pygame_image, rect)
+        except Exception as e:
+            print(f"Error managing leaderboard: {e}")
+            return []
 
-        pilImage = Image.open(filename)
-        frames = []
-        if pilImage.format == 'GIF' and pilImage.is_animated:
-            for frame in ImageSequence.Iterator(pilImage):
-                frames.append(make_frame(frame.convert('RGBA')))
-        else:
-            frames.append(make_frame(pilImage))
-        return frames
+    def create_widgets(self) -> None:
+        self.add_logo()
 
-    def move(self, pos):
-        rect = self.images[self.current_frame].rect
-        rect.centery = (pos - 0.5) * 1.5 * Bird.window_size[1] + Bird.window_size[1] / 2
-        rect.y = max(0, min(rect.y, Bird.window_size[1] - rect.height))
-
-    def draw(self, screen):
-        screen.blit(*self.images[self.current_frame])
-        self.current_frame = (self.current_frame + 1) % self.frame_count
-
-    @property
-    def rect(self):
-        return self.images[self.current_frame].rect
-
-
-class Pipes:
-    DISTANCE_BETWEEN = 500
-    SPACE_BETWEEN = 250
-
-    def __init__(self, window_size):
-        self.pipe_image = pygame.image.load(SPRITE_PIPES)
-        self.pipe_rect = self.pipe_image.get_rect()
-        self.window_size = window_size
-        self.pipes = deque()
-        self.spawn_timer = 0
-        self.spawn_interval = 40
-
-    def pipe_velocity(self):
-        return Pipes.DISTANCE_BETWEEN / self.spawn_interval
-
-    def add_pipe_pair(self):
-        top_pipe = self.pipe_rect.copy()
-        top_pipe.x = self.window_size[0]
-        top_pipe.y = random.randint(-800, -200)
-
-        bottom_pipe = self.pipe_rect.copy()
-        bottom_pipe.x = self.window_size[0]
-        bottom_pipe.y = top_pipe.y + self.pipe_image.get_height() + Pipes.SPACE_BETWEEN
-
-        self.pipes.append((top_pipe, bottom_pipe))
-
-    def update(self):
-        for top, bottom in self.pipes:
-            top.x -= self.pipe_velocity()
-            bottom.x -= self.pipe_velocity()
-
-        if self.pipes and self.pipes[0][0].right < 0:
-            self.pipes.popleft()
-
-        self.spawn_timer += 1
-        if self.spawn_timer >= self.spawn_interval:
-            self.add_pipe_pair()
-            self.spawn_timer = 0
-
-    def draw(self, screen):
-        for top, bottom in self.pipes:
-            screen.blit(pygame.transform.flip(self.pipe_image, False, True), top)
-            screen.blit(self.pipe_image, bottom)
-
-
-class FaceTracker:
-    def __init__(self):
-        self.face_mesh = mp.solutions.face_mesh.FaceMesh(
-            max_num_faces=1,
-            refine_landmarks=True,
-            min_detection_confidence=0.5,
-            min_tracking_confidence=0.5,
+        # Add START button
+        self.start_button: tk.Button = tk.Button(
+            self.root,
+            text="START",
+            command=self.start_game,
+            font=(FONT_FAMILY, 30),
+            fg="black",
+            bg=BUTTON_COLOR,
+            width=5,
         )
-        self.video_capture = cv.VideoCapture(0)
-
-    def get_face_position(self):
-        ret, frame = self.video_capture.read()
-        if not ret:
-            return None, None
-
-        frame = cv.flip(frame, 1)
-        results = self.face_mesh.process(cv.cvtColor(frame, cv.COLOR_BGR2RGB))
-
-        if results.multi_face_landmarks:
-            landmark = results.multi_face_landmarks[0].landmark[94]
-            return landmark.y, frame
-        return None, frame
-
-    def release(self):
-        self.video_capture.release()
-        cv.destroyAllWindows()
-
-
-class FlappyFaceGame:
-    def __init__(self):
-        pygame.init()
-        icon = pygame.image.load('images/pterodactyl.png')
-        pygame.display.set_icon(icon)
-        info_object = pygame.display.Info()
-        self.face_tracker = FaceTracker()
-        self.window_size = (
-            info_object.current_w,
-            info_object.current_h
+        self.start_button.pack(pady=20)
+        # Add leaderboard title
+        leaderboard_label: tk.Label = tk.Label(
+            self.root,
+            text="Leaderboard",
+            fg="white",
+            bg=BACKGROUND_COLOR,
+            font=(FONT_FAMILY, 40, "bold"),
         )
-        self.face_tracker.video_capture.set(cv.CAP_PROP_FRAME_WIDTH,info_object.current_w)
-        self.face_tracker.video_capture.set(cv.CAP_PROP_FRAME_HEIGHT, info_object.current_h)
-        self.screen = pygame.display.set_mode(self.window_size, pygame.RESIZABLE)
-        pygame.display.set_caption("Flappy Bird with Face Tracking")
+        leaderboard_label.pack(pady=10)
 
-        self.bird = Bird(self.window_size)
-        self.pipes = Pipes(self.window_size)
-        self.clock = pygame.time.Clock()
+        self.add_leaderboard()
 
-        self.font = pygame.font.SysFont("Helvetica Bold", 40)
-        self.running = True
-        self.score = 0
-        self.stage = 1
-        self.last_stage_time = time.time()
-        self.leaderboard = []
-        self.logo = pygame.image.load("images/logo.png")
+    def add_logo(self) -> None:
+        """Add and display the logo image."""
+        try:
+            logo_image: Image.Image = Image.open(self.logo_path)
+            logo_aspect_ratio: float = logo_image.width / logo_image.height
+            new_width: int = self.window_width
+            new_height: int = int(new_width / logo_aspect_ratio)
+            logo_image = logo_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
 
-    def display_text(self, text, position, color=(0, 0, 0)):
-        rendered_text = self.font.render(text, True, color)
-        rect = rendered_text.get_rect(center=position)
-        self.screen.blit(rendered_text, rect)
+            self.logo_canvas: tk.Canvas = tk.Canvas(
+                self.root,
+                width=self.window_width,
+                height=new_height,
+                bg=BACKGROUND_COLOR,
+                highlightthickness=0,
+            )
+            self.logo_canvas.pack(pady=20)
+
+            self.logo_image_tk: ImageTk.PhotoImage = ImageTk.PhotoImage(logo_image)
+            self.logo_canvas.create_image(
+                self.window_width // 2,
+                new_height // 2,
+                image=self.logo_image_tk,
+            )
+
+        except Exception as e:
+            print(f"Error loading logo image: {e}")
+            self.logo_canvas = tk.Canvas(self.root, width=self.window_width, height=100, bg=BACKGROUND_COLOR, highlightthickness=0)
+            self.logo_canvas.pack(pady=20)
+            self.logo_canvas.create_text(
+                self.window_width // 2,
+                50,
+                text="Game Logo",
+                font=(FONT_FAMILY, 20, "bold"),
+                fill=TEXT_COLOR,
+            )
+
+    def add_leaderboard(self) -> None:
+        """
+        Add a scrollable leaderboard to the UI.
+        """
+        self.leaderboard_frame = tk.Frame(self.root)
+        self.leaderboard_frame.pack(pady=10)
+
+        self.canvas = tk.Canvas(
+            self.leaderboard_frame,
+            height=self.window_height // 3,
+            width=self.window_width // 2,
+        )
+        self.scrollbar = ttk.Scrollbar(
+            self.leaderboard_frame,
+            orient="vertical",
+            command=self.canvas.yview,
+        )
+        self.scrollable_frame = tk.Frame(self.canvas)
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")),
+        )
+        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        self.canvas.pack(side="left", fill="both", expand=True)
+        self.scrollbar.pack(side="right", fill="y")
+
+        # Load and update leaderboard data
+        self.leaderboard_data = self.manage_leaderboard()
+        self.update_leaderboard()
+
+    def update_leaderboard(self) -> None:
+        """
+        Update the leaderboard display in a grid format.
+        """
+        for widget in self.scrollable_frame.winfo_children():
+            widget.destroy()
+
+        # Define column headers
+        headers = ["Rank", "Type", "Name".center(120), "Class", "Section", "Score".center(10)]
+        for col, header in enumerate(headers):
+            header_label = tk.Label(
+                self.scrollable_frame,
+                text=header,
+                font=("Helvetica", 14, "bold"),
+                bg="#f0f0f0",
+                relief="solid",
+                borderwidth=1,
+                padx=5,
+                pady=5,
+            )
+            header_label.grid(row=0, column=col, sticky="nsew")
+
+        # Populate leaderboard rows
+        for idx, entry in enumerate(self.leaderboard_data):
+            rank_label = tk.Label(
+                self.scrollable_frame,
+                text=f"{idx + 1}",
+                font=("Helvetica", 12),
+                bg="#ffffff",
+                relief="solid",
+                borderwidth=1,
+                padx=5,
+                pady=5,
+            )
+            rank_label.grid(row=idx + 1, column=0, sticky="nsew")
+
+            type_label = tk.Label(
+                self.scrollable_frame,
+                text=entry.get("Type", ""),
+                font=("Helvetica", 12),
+                bg="#ffffff",
+                relief="solid",
+                borderwidth=1,
+                padx=5,
+                pady=5,
+            )
+            type_label.grid(row=idx + 1, column=1, sticky="nsew")
+
+            name_label = tk.Label(
+                self.scrollable_frame,
+                text=entry.get("Name", ""),
+                font=("Helvetica", 12),
+                bg="#ffffff",
+                relief="solid",
+                borderwidth=1,
+                padx=5,
+                pady=5,
+            )
+            name_label.grid(row=idx + 1, column=2, sticky="nsew")
+
+            class_label = tk.Label(
+                self.scrollable_frame,
+                text=entry.get("Class", ""),
+                font=("Helvetica", 12),
+                bg="#ffffff",
+                relief="solid",
+                borderwidth=1,
+                padx=5,
+                pady=5,
+            )
+            class_label.grid(row=idx + 1, column=3, sticky="nsew")
+
+            section_label = tk.Label(
+                self.scrollable_frame,
+                text=entry.get("Section", ""),
+                font=("Helvetica", 12),
+                bg="#ffffff",
+                relief="solid",
+                borderwidth=1,
+                padx=5,
+                pady=5,
+            )
+            section_label.grid(row=idx + 1, column=4, sticky="nsew")
+
+            score_label = tk.Label(
+                self.scrollable_frame,
+                text=entry.get("Score", ""),
+                font=("Helvetica", 12),
+                bg="#ffffff",
+                relief="solid",
+                borderwidth=1,
+                padx=5,
+                pady=5,
+            )
+            score_label.grid(row=idx + 1, column=5, sticky="nsew")
+
+    def start_game(self) -> None:
+        user_form_root: tk.Toplevel = tk.Toplevel(self.root)
+        UserForm(user_form_root, self.process_user_input)
+
+    def process_user_input(self, user_data: Dict[str, Any]) -> None:
+        self.root.withdraw()
+        try:
+            score: int = run_game()
+            user_data["Score"] = score
+            self.leaderboard_data = self.manage_leaderboard(user_data)
+        finally:
+            self.root.deiconify()
+            self.update_leaderboard()
+def main() -> None:
+
+    root: tk.Tk = tk.Tk()
+    icon = tk.PhotoImage(file='images/pterodactyl.png')
+    root.iconphoto(False, icon)
+    Flappy(root)
+    root.mainloop()
 
 
-    def check_collisions(self):
-        for top, bottom in self.pipes.pipes:
-            if self.bird.rect.colliderect(top) or self.bird.rect.colliderect(bottom):
-                self.running = False
-
-    def update_score(self):
-        checker = True
-        for top, bottom in self.pipes.pipes:
-            if top.left <= self.bird.rect.x <= top.right:
-                checker = False
-                if not hasattr(self, "did_update_score") or not self.did_update_score:
-                    self.score += 1
-                    self.did_update_score = True
-            self.screen.blit(self.pipes.pipe_image, bottom)
-            self.screen.blit(pygame.transform.flip(self.pipes.pipe_image, False, True), top)
-        if checker:
-            self.did_update_score = False
-
-    def game_loop(self):
-        self.running = True
-        self.score = 0
-        self.stage = 1
-        self.pipes.pipes.clear()
-        self.pipes.spawn_timer = 0
-
-        while self.running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.cleanup()
-
-            face_position, frame = self.face_tracker.get_face_position()
-
-            if frame is not None:
-                frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
-                frame_surface = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
-                self.screen.blit(frame_surface, (0, 0))
-
-            if face_position is not None:
-                self.bird.move(face_position)
-
-            self.pipes.update()
-            self.check_collisions()
-            self.update_score()
-            self.bird.draw(self.screen)
-            self.pipes.draw(self.screen)
-
-            self.display_text(f"Score: {self.score}", (100, 50))
-            self.display_text(f"Stage: {self.stage}", (100, 100))
-
-            if time.time() - self.last_stage_time > 10:
-                self.stage += 1
-                self.pipes.spawn_interval *= 5 / 6
-                self.last_stage_time = time.time()
-
-            pygame.display.flip()
-            self.clock.tick(60)
-
-        # Add score to leaderboard
-        self.leaderboard.append(self.score)
-
-    def cleanup(self):
-        self.face_tracker.release()
-        pygame.quit()
-
-    def run(self):
-        self.game_loop()
-        return self.score
-
-
-def run_game():
-    game = FlappyFaceGame()
-    try:
-        score = game.run()
-    finally:
-        game.cleanup()
-    return score
+if __name__ == "__main__":
+    main()
