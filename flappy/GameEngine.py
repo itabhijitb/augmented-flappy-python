@@ -2,15 +2,16 @@ import time
 import pygame
 import cv2 as cv
 
-from Bird import Bird
-from Pipes import Pipes
-from FaceTracker import FaceTracker
+from flappy.Bird import Bird
+from flappy.Pipes import Pipes
+from flappy.FaceTracker import FaceTracker
 
+from flappy.constants import ICON, LOGO_IMAGE_PATH
 
 class GameEngine:
     def __init__(self):
         pygame.init()
-        icon = pygame.image.load('images/pterodactyl.png')
+        icon = pygame.image.load(ICON)
         pygame.display.set_icon(icon)
         info_object = pygame.display.Info()
         self.face_tracker = FaceTracker()
@@ -33,7 +34,7 @@ class GameEngine:
         self.stage = 1
         self.last_stage_time = time.time()
         self.leaderboard = []
-        self.logo = pygame.image.load("images/logo.png")
+        self.logo = pygame.image.load(LOGO_IMAGE_PATH)
 
     def display_text(self, text, position, color=(0, 0, 0)):
         rendered_text = self.font.render(text, True, color)

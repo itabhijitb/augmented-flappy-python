@@ -1,3 +1,4 @@
+from flappy.util import resource_path
 # Font settings
 FONT_FAMILY = "JurassicPark"
 FONT_SIZE_LARGE = 30
@@ -9,13 +10,14 @@ BUTTON_COLOR = "#63F5FF"
 TEXT_COLOR = "white"
 
 # File paths
-EXCEL_FILE_PATH = "res/leaderboard.xlsx"
-LOGO_IMAGE_PATH = "images/logo.png"
-SCHOOL_IMAGE_PATH = "images/NHPS.png"
-FONT_FILE_PATH = "res/JurassicPark.otf"
-SPRITE_PIPES = "images/pipe.png"
-SPRITE_BIRD = "images/pterodactyl.gif"
-SPRITE_LOGO = "images/logo.png"
+EXCEL_FILE_PATH = resource_path("res/leaderboard.xlsx")
+LOGO_IMAGE_PATH = resource_path("images/logo.png")
+SCHOOL_IMAGE_PATH = resource_path("images/NHPS.png")
+FONT_FILE_PATH = resource_path("res/JurassicPark.otf")
+SPRITE_PIPES = resource_path("images/pipe.png")
+SPRITE_BIRD = resource_path("images/pterodactyl.gif")
+SPRITE_LOGO = resource_path("images/logo.png")
+ICON = resource_path("images/pterodactyl.png")
 
 
 # Default messages

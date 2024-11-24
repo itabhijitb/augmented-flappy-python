@@ -1,13 +1,16 @@
 import mediapipe as mp
+import face_mesh
 import cv2 as cv
-
+from flappy.util import resource_path
 class FaceTracker:
     def __init__(self):
-        self.face_mesh = mp.solutions.face_mesh.FaceMesh(
+        mediapipe_resource_path = resource_path("mediapipe/modules/face_landmark/face_landmark_front_cpu.binarypb")
+        self.face_mesh = face_mesh.FaceMesh(
             max_num_faces=1,
             refine_landmarks=True,
             min_detection_confidence=0.5,
             min_tracking_confidence=0.5,
+            binary_graph_path=mediapipe_resource_path
         )
         self.video_capture = cv.VideoCapture(0)
 

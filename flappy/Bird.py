@@ -1,7 +1,7 @@
 from PIL import Image, ImageSequence
 from collections import namedtuple
 import pygame
-from constants import SPRITE_BIRD
+from flappy.constants import SPRITE_BIRD
 
 class Bird:
     window_size = None

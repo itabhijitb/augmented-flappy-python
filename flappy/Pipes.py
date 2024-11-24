@@ -1,5 +1,5 @@
 import pygame
-from constants import SPRITE_PIPES
+from flappy.constants import SPRITE_PIPES
 from collections import deque
 import random
 

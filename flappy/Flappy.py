@@ -4,19 +4,20 @@ from PIL import Image, ImageTk
 import pandas as pd
 from typing import List, Optional, Dict, Any
 from screeninfo import get_monitors
-from UserForm import UserForm
-from constants import (
+from flappy.constants import (
     FONT_FAMILY,
     BACKGROUND_COLOR,
     BUTTON_COLOR,
     TEXT_COLOR,
     EXCEL_FILE_PATH,
     LOGO_IMAGE_PATH,
-    SCHOOL_IMAGE_PATH,
     FONT_FILE_PATH,
+    ICON
 )
 import pyglet
-from GameEngine import run_game
+
+from flappy.GameEngine import run_game
+from flappy.UserForm import UserForm
 
 class Flappy:
     def __init__(self, root: tk.Tk) -> None:
@@ -291,7 +292,7 @@ class Flappy:
 def main() -> None:
 
     root: tk.Tk = tk.Tk()
-    icon = tk.PhotoImage(file='images/pterodactyl.png')
+    icon = tk.PhotoImage(file=ICON)
     root.iconphoto(False, icon)
     Flappy(root)
     root.mainloop()

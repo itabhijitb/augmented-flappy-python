@@ -1,0 +1,63 @@
+name: Build for Windows and macOS M2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+
+      - name: Install PyInstaller
+        run: |
+          pip install pyinstaller
+
+      - name: Build Executable
+        run: |
+          pyinstaller --onefile --windowed --name "FlappyGame" \
+              --add-data "flappy/images/*;images" \
+              --add-data "flappy/res/*;res" \
+              --add-data "flappy/mediapipe/modules:mediapipe/modules" \
+              flappy/Flappy.py
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: FlappyGame-Windows
+          path: dist/FlappyGame.exe
+
+  build-macos-m2:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+
+      - name: Install PyInstaller
+        run: |
+          pip install pyinstaller
+
+      - name: Build Executable
+        run: |
+          pyinstaller --onefile --windowed --name "FlappyGame" \
+              --add-data "flappy/images/*:images" \
+              --add-data "flappy/res/*:res" \
+              --add-data "flappy/mediapipe/modules:mediapipe/modules" \
+              flappy/Flappy.py
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: FlappyGame-MacOS-M2
+          path: dist/FlappyGame

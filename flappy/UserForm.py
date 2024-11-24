@@ -1,8 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-from PIL import Image, ImageTk
-import pandas as pd
 from screeninfo import get_monitors
 
 JURASSIC_PARK_FONT = "JurassicPark"
