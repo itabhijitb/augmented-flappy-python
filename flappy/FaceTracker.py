@@ -1,10 +1,13 @@
 import mediapipe as mp
-import face_mesh
+import flappy.face_mesh as face_mesh
 import cv2 as cv
 from flappy.util import resource_path
+from constants import FRONT_CPU_BINARYPB
+from util import find_highest_resolution_camera
+
 class FaceTracker:
-    def __init__(self):
-        mediapipe_resource_path = resource_path("mediapipe/modules/face_landmark/face_landmark_front_cpu.binarypb")
+    def __init__(self, window_size):
+        mediapipe_resource_path = resource_path(FRONT_CPU_BINARYPB)
         self.face_mesh = face_mesh.FaceMesh(
             max_num_faces=1,
             refine_landmarks=True,
@@ -12,7 +15,7 @@ class FaceTracker:
             min_tracking_confidence=0.5,
             binary_graph_path=mediapipe_resource_path
         )
-        self.video_capture = cv.VideoCapture(0)
+        self.video_capture = cv.VideoCapture(find_highest_resolution_camera(window_size))
 
     def get_face_position(self):
         ret, frame = self.video_capture.read()

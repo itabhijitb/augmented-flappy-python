@@ -5,4 +5,5 @@ screeninfo
 opencv-python
 openpyxl
 pandas
-PIL
+pillow
+msvc-runtime

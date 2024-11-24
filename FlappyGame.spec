@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['flappy/Flappy.py'],
+    ['flappy\\Flappy.py'],
     pathex=[],
     binaries=[],
     datas=[('flappy/images/*', 'images'), ('flappy/res/*', 'res'), ('flappy/mediapipe/modules', 'mediapipe/modules')],
@@ -35,10 +35,4 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-)
-app = BUNDLE(
-    exe,
-    name='FlappyGame.app',
-    icon=None,
-    bundle_identifier=None,
 )

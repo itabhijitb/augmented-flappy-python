@@ -22,10 +22,10 @@ jobs:
 
       - name: Build Executable
         run: |
-          pyinstaller --onefile --windowed --name "FlappyGame" \
-              --add-data "flappy/images/*:images" \
-              --add-data "flappy/res/*:res" \
-              --add-data "flappy/mediapipe/modules:mediapipe/modules" \
+          pyinstaller --onefile --windowed --name "FlappyGame" ^
+              --add-data "flappy/images/*:images" ^
+              --add-data "flappy/res/*:res" ^
+              --add-data "flappy/mediapipe/modules:mediapipe/modules" ^
               flappy/Flappy.py
 
       - name: Upload Artifact

@@ -14,11 +14,12 @@ class GameEngine:
         icon = pygame.image.load(ICON)
         pygame.display.set_icon(icon)
         info_object = pygame.display.Info()
-        self.face_tracker = FaceTracker()
         self.window_size = (
             info_object.current_w,
             info_object.current_h
         )
+        self.face_tracker = FaceTracker(self.window_size)
+
         self.face_tracker.video_capture.set(cv.CAP_PROP_FRAME_WIDTH,info_object.current_w)
         self.face_tracker.video_capture.set(cv.CAP_PROP_FRAME_HEIGHT, info_object.current_h)
         self.screen = pygame.display.set_mode(self.window_size, pygame.RESIZABLE)
