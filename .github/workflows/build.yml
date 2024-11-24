@@ -3,7 +3,7 @@ name: Build for Windows and macOS M2
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build-windows:
