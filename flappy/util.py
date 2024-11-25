@@ -8,6 +8,8 @@ def resource_path(relative_path):
         # PyInstaller creates a temp folder and stores files in _MEIPASS
         base_path = sys._MEIPASS
     except AttributeError:
+        if os.path.exists(relative_path):
+            return relative_path
         # Fallback for running without PyInstaller
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)

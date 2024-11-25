@@ -8,7 +8,8 @@ class Pipes:
     SPACE_BETWEEN = 250
 
     def __init__(self, window_size):
-        self.pipe_image = pygame.image.load(SPRITE_PIPES)
+        self.scale = window_size[1] / 1117
+        self.pipe_image = pygame.transform.scale_by(pygame.image.load(SPRITE_PIPES), self.scale)
         self.pipe_rect = self.pipe_image.get_rect()
         self.window_size = window_size
         self.pipes = deque()
@@ -21,11 +22,11 @@ class Pipes:
     def add_pipe_pair(self):
         top_pipe = self.pipe_rect.copy()
         top_pipe.x = self.window_size[0]
-        top_pipe.y = random.randint(-800, -200)
+        top_pipe.y = random.randint(-800, -200) * self.scale
 
         bottom_pipe = self.pipe_rect.copy()
         bottom_pipe.x = self.window_size[0]
-        bottom_pipe.y = top_pipe.y + self.pipe_image.get_height() + Pipes.SPACE_BETWEEN
+        bottom_pipe.y = top_pipe.y + (self.pipe_image.get_height() + Pipes.SPACE_BETWEEN * self.scale)
 
         self.pipes.append((top_pipe, bottom_pipe))
 

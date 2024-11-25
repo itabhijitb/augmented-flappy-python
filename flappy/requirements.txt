@@ -1,0 +1,9 @@
+mediapipe
+pygame
+pyglet
+screeninfo
+opencv-python
+openpyxl
+pandas
+pillow
+msvc-runtime

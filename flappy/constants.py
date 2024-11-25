@@ -18,6 +18,8 @@ SPRITE_PIPES = resource_path("images/pipe.png")
 SPRITE_BIRD = resource_path("images/pterodactyl.gif")
 SPRITE_LOGO = resource_path("images/logo.png")
 ICON = resource_path("images/pterodactyl.png")
+FLYING_SOUND = "audio/flying.mp3"
+CRASH_SOUND = "audio/crash.mp3"
 FRONT_CPU_BINARYPB = "mediapipe/modules/face_landmark/face_landmark_front_cpu.binarypb"
 
 

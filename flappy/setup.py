@@ -2,10 +2,11 @@ from cx_Freeze import setup, Executable
 import os
 # Define additional files to include
 include_files = [
-    ("flappy/audio/", "audio/"),
-    ("flappy/images/", "images/"),
+    ("flappy/audio/", "audio"),
+    ("flappy/images/", "images"),
     ("flappy/mediapipe/modules/face_landmark/face_landmark_front_cpu.binarypb", "mediapipe/modules/face_landmark/face_landmark_front_cpu.binarypb"),
-    ("flappy/res/", "res/")
+    ("flappy/res/JurassicPark.otf", "res/JurassicPark.otf"),
+    ("flappy/res/leaderboard.xlsx", "res/leaderboard.xlsx")
 ]
 
 # Specify the packages required

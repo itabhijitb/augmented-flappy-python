@@ -6,11 +6,19 @@ from flappy.Bird import Bird
 from flappy.Pipes import Pipes
 from flappy.FaceTracker import FaceTracker
 
-from flappy.constants import ICON, LOGO_IMAGE_PATH
+from flappy.constants import (
+    ICON,
+    LOGO_IMAGE_PATH,
+    FLYING_SOUND,
+    CRASH_SOUND)
 
 class GameEngine:
     def __init__(self):
         pygame.init()
+        self.crash_sound = pygame.mixer.Sound(CRASH_SOUND)
+        pygame.mixer.music.load(FLYING_SOUND)
+        pygame.mixer.music.play(-1)
+
         icon = pygame.image.load(ICON)
         pygame.display.set_icon(icon)
         info_object = pygame.display.Info()
@@ -18,10 +26,13 @@ class GameEngine:
             info_object.current_w,
             info_object.current_h
         )
-        self.face_tracker = FaceTracker(self.window_size)
-
+        self.face_tracker = FaceTracker()
         self.face_tracker.video_capture.set(cv.CAP_PROP_FRAME_WIDTH,info_object.current_w)
         self.face_tracker.video_capture.set(cv.CAP_PROP_FRAME_HEIGHT, info_object.current_h)
+        self.window_size = (
+            self.face_tracker.video_capture.get(cv.CAP_PROP_FRAME_WIDTH),
+            self.face_tracker.video_capture.get(cv.CAP_PROP_FRAME_HEIGHT),
+        )
         self.screen = pygame.display.set_mode(self.window_size, pygame.RESIZABLE)
         pygame.display.set_caption("Flappy Bird with Face Tracking")
 
@@ -46,6 +57,8 @@ class GameEngine:
     def check_collisions(self):
         for top, bottom in self.pipes.pipes:
             if self.bird.rect.colliderect(top) or self.bird.rect.colliderect(bottom):
+                pygame.mixer.music.stop()
+                self.crash_sound.play()
                 self.running = False
 
     def update_score(self):
