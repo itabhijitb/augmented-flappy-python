@@ -1,11 +1,12 @@
 import time
 import pygame
 import cv2 as cv
-
+from util import center_window
 from flappy.Bird import Bird
 from flappy.Pipes import Pipes
 from flappy.FaceTracker import FaceTracker
-
+import tkinter as tk
+from tkinter import ttk
 from flappy.constants import (
     ICON,
     LOGO_IMAGE_PATH,
@@ -13,13 +14,36 @@ from flappy.constants import (
     CRASH_SOUND,
     GAME_OVER_LOGO_PATH)
 
+
+class LoadingBar:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("Loading Game......")
+
+        self.root.geometry("400x150")
+        center_window(self.root, 400, 150)
+        # Create a progress bar
+        self.progress_bar = ttk.Progressbar(self.root, orient="horizontal", length=300, mode="determinate")
+        self.progress_bar.pack(pady=10)
+        # Add a label
+        self.message_label = tk.Label(self.root, text="Initializing.....")
+        self.message_label.pack(pady=10)
+        self.progress_bar["maximum"] = 100
+
+    def __call__(self, value, message):
+        self.progress_bar["value"] = value
+        self.progress_bar.update()
+        self.message_label.config(text=message)
+        if value >= 100:
+            self.message_label.config(text="Task Completed! Starting in 3 seconds...")
+            self.root.after(3000, self.root.destroy)
+
 class GameEngine:
     def __init__(self):
+        self.loading_bar = LoadingBar()
         pygame.init()
+        self.loading_bar(10, "Loading assets...")
         self.crash_sound = pygame.mixer.Sound(CRASH_SOUND)
-        pygame.mixer.music.load(FLYING_SOUND)
-        pygame.mixer.music.play(-1)
-
         icon = pygame.image.load(ICON)
         pygame.display.set_icon(icon)
         info_object = pygame.display.Info()
@@ -27,32 +51,42 @@ class GameEngine:
             info_object.current_w,
             info_object.current_h
         )
+        self.logo = pygame.image.load(LOGO_IMAGE_PATH)
+        self.font = pygame.font.SysFont("Helvetica Bold", 40)
+        scaled_width = int(self.window_size[0] * 0.25)
+        scaled_height = int(self.window_size[1] * 0.25)
+        self.game_over_logo = pygame.transform.scale(pygame.image.load(GAME_OVER_LOGO_PATH),
+                                                     (scaled_width, scaled_height))
+        self.loading_bar(20, "Setting up face tracker...")
         self.face_tracker = FaceTracker()
+        self.loading_bar(50, "Determining camera resolution...")
         self.face_tracker.video_capture.set(cv.CAP_PROP_FRAME_WIDTH,info_object.current_w)
         self.face_tracker.video_capture.set(cv.CAP_PROP_FRAME_HEIGHT, info_object.current_h)
+        self.loading_bar(60, "Setting screen resolution...")
         self.window_size = (
             self.face_tracker.video_capture.get(cv.CAP_PROP_FRAME_WIDTH),
             self.face_tracker.video_capture.get(cv.CAP_PROP_FRAME_HEIGHT),
         )
+        self.loading_bar(70, "Setting mode...")
         self.screen = pygame.display.set_mode(self.window_size, pygame.RESIZABLE)
+        self.loading_bar(80, "Initializing game components...")
         pygame.display.set_caption("Flappy Bird with Face Tracking")
 
         self.bird = Bird(self.window_size)
         self.pipes = Pipes(self.window_size)
         self.clock = pygame.time.Clock()
 
-        self.font = pygame.font.SysFont("Helvetica Bold", 40)
+        self.loading_bar(90, "Finalizing...")
         self.running = True
         self.score = 0
         self.stage = 1
         self.last_stage_time = time.time()
         self.leaderboard = []
-        self.logo = pygame.image.load(LOGO_IMAGE_PATH)
+
         self.start_time = time.time()  # Track game start time
         self.countdown_duration = 2 * 60  # Countdown timer: 2 minutes
-        scaled_width = int(self.window_size[0] * 0.25)
-        scaled_height = int(self.window_size[1] * 0.25)
-        self.game_over_logo = pygame.transform.scale(pygame.image.load(GAME_OVER_LOGO_PATH), (scaled_width, scaled_height))
+
+
 
     def display_text(self, text, position, color=(0, 0, 0)):
         rendered_text = self.font.render(text, True, color)
@@ -110,12 +144,14 @@ class GameEngine:
                     return True  # Restart the game
 
     def game_loop(self):
+        self.loading_bar(100, "Starting game...")
         self.running = True
         self.score = 0
         self.stage = 1
         self.pipes.pipes.clear()
         self.pipes.spawn_timer = 0
-
+        pygame.mixer.music.load(FLYING_SOUND)
+        pygame.mixer.music.play(-1)
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

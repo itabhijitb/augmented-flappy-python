@@ -31,3 +31,16 @@ def find_highest_resolution_camera(window_size):
             print("Skipped")
     else:
         return -1
+
+
+def center_window(window, width, height):
+    # Get screen dimensions
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
+
+    # Calculate position to center the window
+    x_coordinate = (screen_width // 2) - (width // 2)
+    y_coordinate = (screen_height // 2) - (height // 2)
+
+    # Set the window geometry
+    window.geometry(f"{width}x{height}+{x_coordinate}+{y_coordinate}")

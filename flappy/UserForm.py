@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from screeninfo import get_monitors
-
+from util import center_window
 
 class UserForm:
     def __init__(self, root, call_back):
@@ -14,6 +14,7 @@ class UserForm:
         monitor = get_monitors()[0]
         self.window_width = monitor.width // 3
         self.window_height = monitor.height // 2
+        center_window(self.root, self.window_width, self.window_height)
         self.root.geometry(f"{self.window_width}x{self.window_height}")
         self.root.resizable(False, False)
 
@@ -173,8 +174,9 @@ class UserForm:
         if role == "Student":
             user_data["Class"] = class_name
             user_data["Section"] = section
-        self.call_back(user_data)
         self.root.destroy()
+        self.call_back(user_data)
+
 
     def on_cancel(self):
         # Close the application without submitting data
