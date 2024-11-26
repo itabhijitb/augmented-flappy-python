@@ -8,7 +8,7 @@ class Pipes:
     SPACE_BETWEEN = 250
 
     def __init__(self, window_size):
-        self.scale = window_size[1] / 1117
+        self.scale = window_size[1] / 1328
         self.pipe_image = pygame.transform.scale_by(pygame.image.load(SPRITE_PIPES), self.scale)
         self.pipe_rect = self.pipe_image.get_rect()
         self.window_size = window_size

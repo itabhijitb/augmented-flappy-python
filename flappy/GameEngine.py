@@ -10,7 +10,8 @@ from flappy.constants import (
     ICON,
     LOGO_IMAGE_PATH,
     FLYING_SOUND,
-    CRASH_SOUND)
+    CRASH_SOUND,
+    GAME_OVER_LOGO_PATH)
 
 class GameEngine:
     def __init__(self):
@@ -47,6 +48,11 @@ class GameEngine:
         self.last_stage_time = time.time()
         self.leaderboard = []
         self.logo = pygame.image.load(LOGO_IMAGE_PATH)
+        self.start_time = time.time()  # Track game start time
+        self.countdown_duration = 2 * 60  # Countdown timer: 2 minutes
+        scaled_width = int(self.window_size[0] * 0.25)
+        scaled_height = int(self.window_size[1] * 0.25)
+        self.game_over_logo = pygame.transform.scale(pygame.image.load(GAME_OVER_LOGO_PATH), (scaled_width, scaled_height))
 
     def display_text(self, text, position, color=(0, 0, 0)):
         rendered_text = self.font.render(text, True, color)
@@ -74,6 +80,35 @@ class GameEngine:
         if checker:
             self.did_update_score = False
 
+    def update_timer(self):
+        elapsed_time = time.time() - self.start_time
+        remaining_time = max(0, int(self.countdown_duration - elapsed_time))
+        minutes = int(remaining_time // 60)
+        seconds = int(remaining_time % 60)
+        timer_text = f"{minutes:02}:{seconds:02}"
+        self.display_text(f"Timer: {timer_text}", (self.window_size[0] - 150, 50),(176,20,41))
+
+        if remaining_time == 0:
+            self.running = False
+
+    def game_over_screen(self):
+        logo_rect = self.game_over_logo.get_rect(center=(self.window_size[0] // 2, self.window_size[1] // 2 ))
+        self.screen.blit(self.game_over_logo, logo_rect)
+        self.display_text(f"Score: {self.score}", (self.window_size[0] // 2, self.window_size[1] // 2 + 50),
+                          (176,20,41))
+
+        self.display_text("Press any key to Continue", (self.window_size[0] // 2, self.window_size[1] // 2 + 150),
+                          (176,20,41))
+        pygame.display.flip()
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.cleanup()
+                    exit()
+                if event.type == pygame.KEYDOWN:
+                    return True  # Restart the game
+
     def game_loop(self):
         self.running = True
         self.score = 0
@@ -99,11 +134,12 @@ class GameEngine:
             self.pipes.update()
             self.check_collisions()
             self.update_score()
+            self.update_timer()
             self.bird.draw(self.screen)
             self.pipes.draw(self.screen)
 
-            self.display_text(f"Score: {self.score}", (100, 50))
-            self.display_text(f"Stage: {self.stage}", (100, 100))
+            self.display_text(f"Score: {self.score}", (100, 50),(176,20,41))
+            self.display_text(f"Stage: {self.stage}", (100, 100),(176,20,41))
 
             if time.time() - self.last_stage_time > 10:
                 self.stage += 1
@@ -115,6 +151,7 @@ class GameEngine:
 
         # Add score to leaderboard
         self.leaderboard.append(self.score)
+        self.game_over_screen()
 
     def cleanup(self):
         self.face_tracker.release()

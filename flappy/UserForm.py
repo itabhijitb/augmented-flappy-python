@@ -3,18 +3,23 @@ from tkinter import ttk
 from tkinter import messagebox
 from screeninfo import get_monitors
 
-JURASSIC_PARK_FONT = "JurassicPark"
+
 class UserForm:
     def __init__(self, root, call_back):
         self.root = root
         self.call_back = call_back
-        self.root.title("User Form")
+        self.root.overrideredirect(True)  # Remove window title bar
+
         # Configure window dimensions based on display resolution
         monitor = get_monitors()[0]
-        self.window_width = monitor.width // 4
+        self.window_width = monitor.width // 3
         self.window_height = monitor.height // 2
         self.root.geometry(f"{self.window_width}x{self.window_height}")
         self.root.resizable(False, False)
+
+        # Calculate dynamic font size based on screen resolution
+        self.base_font_size = self.window_width // 50
+        self.font = ("Courier", self.base_font_size, "bold")  # Retro console style with monospaced font
 
         # Input Variables
         self.name_var = tk.StringVar()
@@ -25,51 +30,128 @@ class UserForm:
         # Create UI elements
         self.create_widgets()
 
-    def create_widgets(self):
-        # Name Input
+        # Add drag functionality for the custom window
+        self.add_drag_functionality()
 
-        name_label = tk.Label(self.root, text="Name", font=(JURASSIC_PARK_FONT, 20))
-        name_label.pack(pady=10)
-        name_entry = tk.Entry(self.root, textvariable=self.name_var, font=(JURASSIC_PARK_FONT, 20), width=20)
-        name_entry.pack()
+
+    def create_widgets(self):
+        # Create a canvas to draw the rectangle
+        canvas = tk.Canvas(self.root, bg="#0015ac", highlightthickness=0)
+        canvas.pack(fill=tk.BOTH, expand=True)
+
+        # Draw a rectangle border
+        rect_margin = 10  # Margin for the rectangle
+        canvas.create_rectangle(
+            rect_margin,
+            rect_margin,
+            self.window_width - rect_margin,
+            self.window_height - rect_margin,
+            outline="white",
+            width=1,  # Thickness of the rectangle border
+        )
+
+        # "Player Details" label positioned on the rectangle
+        player_label = tk.Label(
+            canvas,
+            text=" Player Details ",
+            font=self.font,
+            bg="#0015ac",
+            fg="white",
+        )
+        player_label.place(relx=0.5, y=0, anchor="n")
+
+        # Main Frame for content
+        main_frame = tk.Frame(canvas, bg="#0015ac")
+        main_frame.place(relx=0.5, rely=0.5, anchor="center")
+
+        # Name Input
+        name_label = tk.Label(main_frame, text="Name:", font=self.font, fg="white", bg="#0015ac")
+        name_label.grid(row=0, column=0, padx=10, pady=10, sticky="e")
+        name_entry = tk.Entry(
+            main_frame,
+            textvariable=self.name_var,
+            font=self.font,
+            width=25,
+            bg="#47a3b0",
+            fg="black",
+            insertbackground="black",
+            relief="flat",  # Remove border
+            highlightthickness=0,  # Remove inner white border
+        )
+        name_entry.grid(row=0, column=1, padx=10, pady=10, sticky="w")
 
         # Role Dropdown
-        role_label = tk.Label(self.root, text="Role", font=(JURASSIC_PARK_FONT, 20))
-        role_label.pack(pady=10)
+        role_label = tk.Label(main_frame, text="Role:", font=self.font, fg="white", bg="#0015ac")
+        role_label.grid(row=1, column=0, padx=10, pady=10, sticky="e")
         role_dropdown = ttk.Combobox(
-            self.root, textvariable=self.role_var, values=["Teacher", "Parent", "Student"], state="readonly", font=(JURASSIC_PARK_FONT, 20), width=10
+            main_frame,
+            textvariable=self.role_var,
+            values=["Teacher", "Parent", "Student"],
+            state="readonly",
+            font=self.font,
         )
         role_dropdown.bind("<<ComboboxSelected>>", self.on_role_change)
-        role_dropdown.pack()
+        role_dropdown.grid(row=1, column=1, padx=10, pady=10, sticky="w")
 
         # Student-specific fields (hidden by default)
-        self.student_frame = tk.Frame(self.root)
+        self.student_frame = tk.Frame(main_frame, bg="#0015ac")
 
-        class_label = tk.Label(self.student_frame, text="Class", font=(JURASSIC_PARK_FONT, 20))
-        class_label.grid(row=0, column=0, padx=5, pady=5)
-        class_entry = tk.Entry(self.student_frame, textvariable=self.class_var, font=(JURASSIC_PARK_FONT, 20), width=10)
-        class_entry.grid(row=0, column=1, padx=5, pady=5)
+        class_label = tk.Label(self.student_frame, text="Class:", font=self.font, fg="white", bg="#0015ac")
+        class_label.grid(row=0, column=0, padx=10, pady=10, sticky="e")
+        class_dropdown = ttk.Combobox(
+            self.student_frame,
+            textvariable=self.class_var,
+            values=["Nursery", "LKG", "UKG", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+            state="readonly",
+            font=self.font,
+        )
+        class_dropdown.grid(row=0, column=1, padx=10, pady=10, sticky="w")
 
-        section_label = tk.Label(self.student_frame, text="Section", font=(JURASSIC_PARK_FONT, 20))
-        section_label.grid(row=1, column=0, padx=5, pady=5)
-        section_entry = tk.Entry(self.student_frame, textvariable=self.section_var, font=(JURASSIC_PARK_FONT, 20), width=20)
-        section_entry.grid(row=1, column=1, padx=5, pady=5)
+        section_label = tk.Label(self.student_frame, text="Section:", font=self.font, fg="white", bg="#0015ac")
+        section_label.grid(row=1, column=0, padx=10, pady=10, sticky="e")
+        section_dropdown = ttk.Combobox(
+            self.student_frame,
+            textvariable=self.section_var,
+            values=["A", "B", "C", "D", "E"],
+            state="readonly",
+            font=self.font,
+        )
+        section_dropdown.grid(row=1, column=1, padx=10, pady=10, sticky="w")
 
-        # Submit Button
-        self.submit_button = tk.Button(self.root, text="Submit", command=self.on_submit, font=(JURASSIC_PARK_FONT, 20), bg="#63F5FF")
-        self.submit_button.pack(pady=20)
+        # Submit and Cancel Buttons
+        button_frame = tk.Frame(main_frame, bg="#0015ac")
+        button_frame.grid(row=4, column=0, columnspan=2, pady=20)
+
+        submit_button = tk.Button(
+            button_frame,
+            text="Submit",
+            command=self.on_submit,
+            font=self.font,
+            bg="black",
+            fg="lightgreen",
+            activebackground="lightgreen",
+            activeforeground="black",
+        )
+        submit_button.pack(side=tk.LEFT, padx=10)
+
+        cancel_button = tk.Button(
+            button_frame,
+            text="Cancel",
+            command=self.on_cancel,
+            font=self.font,
+            bg="black",
+            fg="red",
+            activebackground="red",
+            activeforeground="black",
+        )
+        cancel_button.pack(side=tk.LEFT, padx=10)
 
     def on_role_change(self, event):
         # Show or hide student-specific fields based on role
         if self.role_var.get() == "Student":
-            self.student_frame.pack(pady=10)
-            self.submit_button.pack_forget()
-            self.submit_button = tk.Button(self.root, text="Submit", command=self.on_submit, font=(JURASSIC_PARK_FONT, 30),
-                                           bg="#63F5FF")
-            self.submit_button.pack(pady=20)
-
+            self.student_frame.grid(row=3, column=0, columnspan=2, pady=10)
         else:
-            self.student_frame.pack_forget()
+            self.student_frame.grid_forget()
 
     def on_submit(self):
         # Validate inputs
@@ -93,3 +175,34 @@ class UserForm:
             user_data["Section"] = section
         self.call_back(user_data)
         self.root.destroy()
+
+    def on_cancel(self):
+        # Close the application without submitting data
+        self.root.destroy()
+
+    def add_drag_functionality(self):
+        # Enable dragging the custom window
+        def start_drag(event):
+            self.x_offset = event.x
+            self.y_offset = event.y
+
+        def do_drag(event):
+            x = self.root.winfo_pointerx() - self.x_offset
+            y = self.root.winfo_pointery() - self.y_offset
+            self.root.geometry(f"+{x}+{y}")
+
+        self.root.bind("<Button-1>", start_drag)
+        self.root.bind("<B1-Motion>", do_drag)
+
+
+def run_user_form():
+    def display_user_data(user_data):
+        messagebox.showinfo("User Data", f"Collected Data:\n{user_data}")
+
+    root = tk.Tk()
+    app = UserForm(root, display_user_data)
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    run_user_form()

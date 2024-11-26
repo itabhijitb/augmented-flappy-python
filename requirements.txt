@@ -6,4 +6,3 @@ opencv-python
 openpyxl
 pandas
 pillow
-msvc-runtime
