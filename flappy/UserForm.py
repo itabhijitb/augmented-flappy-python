@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from screeninfo import get_monitors
-from util import center_window
+from flappy.util import center_window
 
 class UserForm:
     def __init__(self, root, call_back):

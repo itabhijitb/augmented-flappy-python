@@ -1,7 +1,7 @@
 import time
 import pygame
 import cv2 as cv
-from util import center_window
+from flappy.util import center_window
 from flappy.Bird import Bird
 from flappy.Pipes import Pipes
 from flappy.FaceTracker import FaceTracker
@@ -68,7 +68,7 @@ class GameEngine:
             self.face_tracker.video_capture.get(cv.CAP_PROP_FRAME_HEIGHT),
         )
         self.loading_bar(70, "Setting mode...")
-        self.screen = pygame.display.set_mode(self.window_size, pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode(self.window_size, pygame.NOFRAME)
         self.loading_bar(80, "Initializing game components...")
         pygame.display.set_caption("Flappy Bird with Face Tracking")
 
