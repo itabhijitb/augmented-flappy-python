@@ -3,6 +3,8 @@ from tkinter import ttk
 from tkinter import messagebox
 from screeninfo import get_monitors
 from flappy.util import center_window
+from flappy.constants import CONSOLE_BLUE
+
 
 class UserForm:
     def __init__(self, root, call_back):
@@ -13,13 +15,13 @@ class UserForm:
         # Configure window dimensions based on display resolution
         monitor = get_monitors()[0]
         self.window_width = monitor.width // 3
-        self.window_height = monitor.height // 2
+        self.window_height = monitor.height // 3
         center_window(self.root, self.window_width, self.window_height)
         self.root.geometry(f"{self.window_width}x{self.window_height}")
         self.root.resizable(False, False)
 
         # Calculate dynamic font size based on screen resolution
-        self.base_font_size = self.window_width // 50
+        self.base_font_size = self.window_width // 40
         self.font = ("Courier", self.base_font_size, "bold")  # Retro console style with monospaced font
 
         # Input Variables
@@ -37,7 +39,7 @@ class UserForm:
 
     def create_widgets(self):
         # Create a canvas to draw the rectangle
-        canvas = tk.Canvas(self.root, bg="#0015ac", highlightthickness=0)
+        canvas = tk.Canvas(self.root, bg=CONSOLE_BLUE, highlightthickness=0)
         canvas.pack(fill=tk.BOTH, expand=True)
 
         # Draw a rectangle border
@@ -56,17 +58,17 @@ class UserForm:
             canvas,
             text=" Player Details ",
             font=self.font,
-            bg="#0015ac",
+            bg=CONSOLE_BLUE,
             fg="white",
         )
-        player_label.place(relx=0.5, y=0, anchor="n")
+        player_label.place(relx=0.5, y=0, x=-200, anchor="n")
 
         # Main Frame for content
-        main_frame = tk.Frame(canvas, bg="#0015ac")
+        main_frame = tk.Frame(canvas, bg=CONSOLE_BLUE)
         main_frame.place(relx=0.5, rely=0.5, anchor="center")
 
         # Name Input
-        name_label = tk.Label(main_frame, text="Name:", font=self.font, fg="white", bg="#0015ac")
+        name_label = tk.Label(main_frame, text="Name:", font=self.font, fg="white", bg=CONSOLE_BLUE)
         name_label.grid(row=0, column=0, padx=10, pady=10, sticky="e")
         name_entry = tk.Entry(
             main_frame,
@@ -82,7 +84,7 @@ class UserForm:
         name_entry.grid(row=0, column=1, padx=10, pady=10, sticky="w")
 
         # Role Dropdown
-        role_label = tk.Label(main_frame, text="Role:", font=self.font, fg="white", bg="#0015ac")
+        role_label = tk.Label(main_frame, text="Role:", font=self.font, fg="white", bg=CONSOLE_BLUE)
         role_label.grid(row=1, column=0, padx=10, pady=10, sticky="e")
         role_dropdown = ttk.Combobox(
             main_frame,
@@ -95,9 +97,9 @@ class UserForm:
         role_dropdown.grid(row=1, column=1, padx=10, pady=10, sticky="w")
 
         # Student-specific fields (hidden by default)
-        self.student_frame = tk.Frame(main_frame, bg="#0015ac")
+        self.student_frame = tk.Frame(main_frame, bg=CONSOLE_BLUE)
 
-        class_label = tk.Label(self.student_frame, text="Class:", font=self.font, fg="white", bg="#0015ac")
+        class_label = tk.Label(self.student_frame, text="Class:", font=self.font, fg="white", bg=CONSOLE_BLUE)
         class_label.grid(row=0, column=0, padx=10, pady=10, sticky="e")
         class_dropdown = ttk.Combobox(
             self.student_frame,
@@ -108,7 +110,7 @@ class UserForm:
         )
         class_dropdown.grid(row=0, column=1, padx=10, pady=10, sticky="w")
 
-        section_label = tk.Label(self.student_frame, text="Section:", font=self.font, fg="white", bg="#0015ac")
+        section_label = tk.Label(self.student_frame, text="Section:", font=self.font, fg="white", bg=CONSOLE_BLUE)
         section_label.grid(row=1, column=0, padx=10, pady=10, sticky="e")
         section_dropdown = ttk.Combobox(
             self.student_frame,
@@ -120,7 +122,7 @@ class UserForm:
         section_dropdown.grid(row=1, column=1, padx=10, pady=10, sticky="w")
 
         # Submit and Cancel Buttons
-        button_frame = tk.Frame(main_frame, bg="#0015ac")
+        button_frame = tk.Frame(main_frame, bg=CONSOLE_BLUE)
         button_frame.grid(row=4, column=0, columnspan=2, pady=20)
 
         submit_button = tk.Button(

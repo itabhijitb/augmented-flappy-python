@@ -1,6 +1,7 @@
 import time
 import pygame
 import cv2 as cv
+
 from flappy.util import center_window
 from flappy.Bird import Bird
 from flappy.Pipes import Pipes
@@ -63,12 +64,16 @@ class GameEngine:
         self.face_tracker.video_capture.set(cv.CAP_PROP_FRAME_WIDTH,info_object.current_w)
         self.face_tracker.video_capture.set(cv.CAP_PROP_FRAME_HEIGHT, info_object.current_h)
         self.loading_bar(60, "Setting screen resolution...")
-        self.window_size = (
+        camera_resolution = (
             self.face_tracker.video_capture.get(cv.CAP_PROP_FRAME_WIDTH),
             self.face_tracker.video_capture.get(cv.CAP_PROP_FRAME_HEIGHT),
         )
         self.loading_bar(70, "Setting mode...")
-        self.screen = pygame.display.set_mode(self.window_size, pygame.NOFRAME)
+        if self.window_size > camera_resolution:
+            self.window_size = camera_resolution
+            self.screen = pygame.display.set_mode(self.window_size, pygame.NOFRAME)
+        else:
+            self.screen = pygame.display.set_mode(self.window_size)
         self.loading_bar(80, "Initializing game components...")
         pygame.display.set_caption("Flappy Bird with Face Tracking")
 
@@ -82,6 +87,7 @@ class GameEngine:
         self.stage = 1
         self.last_stage_time = time.time()
         self.leaderboard = []
+        self.did_update_score = False
 
         self.start_time = time.time()  # Track game start time
         self.countdown_duration = 2 * 60  # Countdown timer: 2 minutes
@@ -106,7 +112,7 @@ class GameEngine:
         for top, bottom in self.pipes.pipes:
             if top.left <= self.bird.rect.x <= top.right:
                 checker = False
-                if not hasattr(self, "did_update_score") or not self.did_update_score:
+                if not self.did_update_score:
                     self.score += 1
                     self.did_update_score = True
             self.screen.blit(self.pipes.pipe_image, bottom)
@@ -120,7 +126,7 @@ class GameEngine:
         minutes = int(remaining_time // 60)
         seconds = int(remaining_time % 60)
         timer_text = f"{minutes:02}:{seconds:02}"
-        self.display_text(f"Timer: {timer_text}", (self.window_size[0] - 150, 50),(176,20,41))
+        self.display_text(f"Timer: {timer_text}", (self.window_size[0] - 150, 100),(176,20,41))
 
         if remaining_time == 0:
             self.running = False
@@ -205,3 +211,6 @@ def run_game():
     finally:
         game.cleanup()
     return score
+
+if __name__ == "__main__":
+    run_game()

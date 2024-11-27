@@ -16,23 +16,20 @@ jobs:
         with:
           python-version: 3.10
 
-      - name: Install PyInstaller
+      - name: Install Dependencies
         run: |
-          pip install pyinstaller
+          python -m pip install --upgrade pip
+          pip install cx_Freeze
 
       - name: Build Executable
         run: |
-          pyinstaller --onefile --windowed --name "FlappyGame" ^
-              --add-data "flappy/images/*:images" ^
-              --add-data "flappy/res/*:res" ^
-              --add-data "flappy/mediapipe/modules:mediapipe/modules" ^
-              flappy/Flappy.py
+          python setup.py build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
           name: FlappyGame-Windows
-          path: dist/FlappyGame.exe
+          path: build/exe.win-amd64-3.10/
 
   build-macos-m2:
     runs-on: macos-13
@@ -42,22 +39,19 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.13.0
+          python-version: 3.10
 
-      - name: Install PyInstaller
+      - name: Install Dependencies
         run: |
-          pip install pyinstaller
+          python -m pip install --upgrade pip
+          pip install cx_Freeze
 
       - name: Build Executable
         run: |
-          pyinstaller --onefile --windowed --name "FlappyGame" \
-              --add-data "flappy/images/*:images" \
-              --add-data "flappy/res/*:res" \
-              --add-data "flappy/mediapipe/modules:mediapipe/modules" \
-              flappy/Flappy.py
+          python setup.py build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
           name: FlappyGame-MacOS-M2
-          path: dist/FlappyGame
+          path: build/exe.macosx-<arch>-3.10/

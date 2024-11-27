@@ -1,13 +1,15 @@
 from flappy.util import resource_path
 # Font settings
-FONT_FAMILY = "JurassicPark"
+FONT_FAMILY = "Helvetica"
 FONT_SIZE_LARGE = 30
 FONT_SIZE_MEDIUM = 20
 
 # Color scheme
-BACKGROUND_COLOR = "black"
+
 BUTTON_COLOR = "#63F5FF"
 TEXT_COLOR = "white"
+CONSOLE_BLUE = "#0015ac"
+BACKGROUND_COLOR = "black"
 
 # File paths
 EXCEL_FILE_PATH = resource_path("res/leaderboard.xlsx")
