@@ -13,7 +13,7 @@ class FaceTracker:
             min_tracking_confidence=0.5,
             binary_graph_path=mediapipe_resource_path
         )
-        self.video_capture = cv.VideoCapture(0)
+        self.video_capture = cv.VideoCapture(0, cv.CAP_DSHOW)
 
     def get_face_position(self):
         ret, frame = self.video_capture.read()
