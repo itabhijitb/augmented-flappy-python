@@ -38,7 +38,7 @@ class LoadingBar:
         if value >= 100:
             self.message_label.config(text="Task Completed! Starting in 3 seconds...")
             self.root.after(3000, self.root.destroy)
-face_tracker = FaceTracker()
+
 class GameEngine:
     def __init__(self):
         self.loading_bar = LoadingBar()
@@ -53,13 +53,13 @@ class GameEngine:
             info_object.current_h
         )
         self.logo = pygame.image.load(LOGO_IMAGE_PATH)
-        self.font = pygame.font.SysFont("Helvetica Bold", 40)
+        self.font = pygame.font.SysFont("Helvetica Bold", 30)
         scaled_width = int(self.window_size[0] * 0.25)
         scaled_height = int(self.window_size[1] * 0.25)
         self.game_over_logo = pygame.transform.scale(pygame.image.load(GAME_OVER_LOGO_PATH),
                                                      (scaled_width, scaled_height))
         self.loading_bar(20, "Setting up face tracker...")
-        self.face_tracker = face_tracker
+        self.face_tracker = FaceTracker()
         self.loading_bar(50, "Determining camera resolution...")
         self.loading_bar(60, "Setting screen resolution...")
         self.face_tracker.video_capture.set(cv.CAP_PROP_FRAME_WIDTH, info_object.current_w)
@@ -92,7 +92,7 @@ class GameEngine:
         self.did_update_score = False
 
         self.start_time = time.time()  # Track game start time
-        self.countdown_duration = 2 * 10  # Countdown timer: 2 minutes
+        self.countdown_duration = 2 * 60  # Countdown timer: 2 minutes
 
 
 
@@ -103,20 +103,8 @@ class GameEngine:
 
 
     def check_collisions(self):
-        def colliderect(rect1, rect2):
-            """Check if two rectangles overlap."""
-            l1, r1 = rect1.topleft, rect1.bottomright
-            l2, r2 = rect2.topleft, rect2.bottomright
-
-            # Check non-overlapping conditions
-            if r1[0] < l2[0] or l1[0] > r2[0] or r1[1] < l2[1] or l1[1] > r2[1]:
-                return False
-            return True
         for top, bottom in self.pipes.pipes:
-            rect = self.bird.rect.copy()
-            rect.update(rect.topleft[0], rect.midleft[1] - 1, rect.width, 2)
-            # Check collision with top or bottom pipe
-            if colliderect(rect, top) or colliderect(rect, bottom):
+            if self.bird.rect.colliderect(top) or self.bird.rect.colliderect(bottom):
                 pygame.mixer.music.stop()
                 self.crash_sound.play()
                 self.running = False
@@ -145,16 +133,16 @@ class GameEngine:
 
         if remaining_time == 0:
             pygame.mixer.music.stop()
+            self.crash_sound.play()
             self.running = False
-            return
 
     def game_over_screen(self):
         logo_rect = self.game_over_logo.get_rect(center=(self.window_size[0] // 2, self.window_size[1] // 2 ))
         self.screen.blit(self.game_over_logo, logo_rect)
-        self.display_text(f"Score: {self.score}", (self.window_size[0] // 2, self.window_size[1] // 2 + 50),
+        self.display_text(f"Score: {self.score}", (self.window_size[0] // 2, self.window_size[1] // 2 + 25),
                           (176,20,41))
 
-        self.display_text("Press any key to Continue", (self.window_size[0] // 2, self.window_size[1] // 2 + 150),
+        self.display_text("Press any key to Continue", (self.window_size[0] // 2, self.window_size[1] // 2 + 75),
                           (176,20,41))
         pygame.display.flip()
 
