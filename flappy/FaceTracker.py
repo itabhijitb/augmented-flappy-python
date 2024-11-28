@@ -1,9 +1,7 @@
-import mediapipe as mp
 import flappy.face_mesh as face_mesh
 import cv2 as cv
 from flappy.util import resource_path
 from flappy.constants import FRONT_CPU_BINARYPB
-from flappy.util import find_highest_resolution_camera
 
 class FaceTracker:
     def __init__(self):

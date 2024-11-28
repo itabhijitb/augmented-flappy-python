@@ -22,7 +22,7 @@ class Bird:
     @staticmethod
     def __loadGIF(filename):
         def make_frame(image):
-            pygame_image = pygame.transform.scale(Bird.__pilImageToSurface(image), (75, 55))
+            pygame_image = pygame.transform.scale(Bird.__pilImageToSurface(image), (100, 73))
             rect = pygame_image.get_rect()
             rect.center = (Bird.window_size[0] // 6, Bird.window_size[1] // 2)
             return Bird.IMAGE(pygame_image, rect)

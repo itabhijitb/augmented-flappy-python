@@ -38,7 +38,7 @@ class LoadingBar:
         if value >= 100:
             self.message_label.config(text="Task Completed! Starting in 3 seconds...")
             self.root.after(3000, self.root.destroy)
-
+face_tracker = FaceTracker()
 class GameEngine:
     def __init__(self):
         self.loading_bar = LoadingBar()
@@ -59,7 +59,7 @@ class GameEngine:
         self.game_over_logo = pygame.transform.scale(pygame.image.load(GAME_OVER_LOGO_PATH),
                                                      (scaled_width, scaled_height))
         self.loading_bar(20, "Setting up face tracker...")
-        self.face_tracker = FaceTracker()
+        self.face_tracker = face_tracker
         self.loading_bar(50, "Determining camera resolution...")
         self.face_tracker.video_capture.set(cv.CAP_PROP_FRAME_WIDTH,info_object.current_w)
         self.face_tracker.video_capture.set(cv.CAP_PROP_FRAME_HEIGHT, info_object.current_h)
@@ -162,6 +162,11 @@ class GameEngine:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.cleanup()
+                # Handle Escape key press
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        print("Escape key pressed. Exiting...")
+                        self.cleanup()
 
             face_position, frame = self.face_tracker.get_face_position()
 
