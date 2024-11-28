@@ -1,4 +1,7 @@
 import pygame
+from pygame import SurfaceType
+from pygame.rect import RectType
+
 from flappy.constants import SPRITE_PIPES
 from collections import deque
 import random
@@ -7,12 +10,13 @@ class Pipes:
     DISTANCE_BETWEEN = 500
     SPACE_BETWEEN = 250
 
-    def __init__(self, window_size):
+    def __init__(self, window_size:tuple[int, int]):
         self.scale = window_size[1] / 1328
-        self.pipe_image = pygame.transform.scale_by(pygame.image.load(SPRITE_PIPES), self.scale)
-        self.pipe_rect = self.pipe_image.get_rect()
+        self.bottom_image: SurfaceType = pygame.transform.scale_by(pygame.image.load(SPRITE_PIPES), self.scale)
+        self.top_image: SurfaceType = pygame.transform.flip(self.bottom_image, True, False)
+        self.rect: RectType = self.bottom_image.get_rect()
         self.window_size = window_size
-        self.pipes = deque()
+        self.pipes: deque[tuple[RectType, RectType]] = deque()
         self.spawn_timer = 0
         self.spawn_interval = 40
 
@@ -20,13 +24,13 @@ class Pipes:
         return Pipes.DISTANCE_BETWEEN / self.spawn_interval
 
     def add_pipe_pair(self):
-        top_pipe = self.pipe_rect.copy()
+        top_pipe = self.rect.copy()
         top_pipe.x = self.window_size[0]
         top_pipe.y = random.randint(-800, -200) * self.scale
 
-        bottom_pipe = self.pipe_rect.copy()
+        bottom_pipe = self.rect.copy()
         bottom_pipe.x = self.window_size[0]
-        bottom_pipe.y = top_pipe.y + (self.pipe_image.get_height() + Pipes.SPACE_BETWEEN * self.scale)
+        bottom_pipe.y = top_pipe.y + (self.bottom_image.get_height() + Pipes.SPACE_BETWEEN * self.scale)
 
         self.pipes.append((top_pipe, bottom_pipe))
 
@@ -45,5 +49,5 @@ class Pipes:
 
     def draw(self, screen):
         for top, bottom in self.pipes:
-            screen.blit(pygame.transform.flip(self.pipe_image, False, True), top)
-            screen.blit(self.pipe_image, bottom)
+            screen.blit(pygame.transform.flip(self.bottom_image, False, True), top)
+            screen.blit(self.bottom_image, bottom)

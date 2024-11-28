@@ -11,7 +11,7 @@ include_files = [
 
 # Specify the packages required
 build_exe_options = {
-    "packages": ["PIL", "pygame", "mediapipe", "pyglet", "pandas", "screeninfo", "openpyxl", "cv2"],
+    "packages": ["PIL", "pygame", "mediapipe", "pyglet", "pandas", "screeninfo", "openpyxl", "cv2", "playsound"],
     "include_files": include_files,
 }
 

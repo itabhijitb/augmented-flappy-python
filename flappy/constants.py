@@ -23,6 +23,7 @@ ICON = resource_path("images/pterodactyl.png")
 GAME_OVER_LOGO_PATH = resource_path("images/GameOver.png")
 FLYING_SOUND = "audio/flying.mp3"
 CRASH_SOUND = "audio/crash.mp3"
+JURASSIC_PARK_THEME = "audio/JurassicParkthemesong.wav"
 FRONT_CPU_BINARYPB = "mediapipe/modules/face_landmark/face_landmark_front_cpu.binarypb"
 
 
