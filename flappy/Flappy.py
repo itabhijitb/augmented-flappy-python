@@ -1,27 +1,30 @@
 import tkinter as tk
 from tkinter import ttk
+
 from PIL import Image, ImageTk
 import pandas as pd
 from typing import List, Optional, Dict, Any
 from screeninfo import get_monitors
 import pyglet
 
+from flappy.MusicPlayer import MusicPlayer
+from flappy.Rules import show_rules_popup
 # Constants
 from flappy.constants import (
     FONT_FAMILY,
     BACKGROUND_COLOR,
-    BUTTON_COLOR,
     TEXT_COLOR,
     EXCEL_FILE_PATH,
     LOGO_IMAGE_PATH,
     FONT_FILE_PATH,
     ICON,
-    CONSOLE_BLUE
+    CONSOLE_BLUE, JURASSIC_PARK_THEME
 )
 
 # Game components
 from flappy.GameEngine import run_game
 from flappy.UserForm import UserForm
+from flappy.credits import show_credits_popup
 
 
 def _manage_leaderboard(user_data: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
@@ -66,7 +69,8 @@ class Flappy:
     font_file: str = FONT_FILE_PATH
     def __init__(self, root: tk.Tk) -> None:
         self.root: tk.Tk = root
-
+        self.music_player = MusicPlayer(JURASSIC_PARK_THEME)
+        self.music_player.play()
         self.leaderboard_data: List[Dict[str, Any]] = []
 
         # Configure the root window
@@ -113,7 +117,7 @@ class Flappy:
                     "foreground": "white",
                     "font": ("Courier", 24),
                     "borderwidth": 1,
-                    "anchor" : "center"
+                    "anchor": "center",
                 },
                 "map": {
                     "background": [("active", "green")],
@@ -141,6 +145,18 @@ class Flappy:
                     "borderwidth": 1,
                 }
             },
+            "TScrollbar": {
+                "configure": {
+                    "background": "black",
+                    "troughcolor": "green",
+                    "arrowcolor": "white",
+                    "borderwidth": 1,
+                },
+                "map": {
+                    "background": [("active", "green")],
+                    "arrowcolor": [("active", "black")],
+                }
+            },
         })
         self.style.theme_use('retro')
 
@@ -150,7 +166,7 @@ class Flappy:
         self.root.grid_columnconfigure(0, weight=1)
 
         self._add_logo()
-        self._add_start_button()
+        self._add_button()
         self._add_leaderboard_title()
         self._add_leaderboard()
 
@@ -215,16 +231,47 @@ class Flappy:
             fill=TEXT_COLOR,
         )
 
-    def _add_start_button(self) -> None:
-        """Add the START button to the UI."""
-        # Create shadow as a Label
-        self.start_button: tk.Button = ttk.Button(
-                self.root,
-                text="START",
-                command=self._start_game,
-                width=10
-            )
-        self.start_button.grid(row=1, column=0, pady=20, sticky="n")
+    def _add_button(self) -> None:
+        """Add the START, RULES, and CREDITS buttons to the UI."""
+        # Create a frame to hold the buttons
+        button_frame = ttk.Frame(self.root, style="TFrame")
+        button_frame.grid(row=1, column=0, pady=20, padx=10)
+
+        # Center the button frame within the root
+        self.root.grid_rowconfigure(1, weight=1)
+        self.root.grid_columnconfigure(0, weight=1)
+
+        # START button
+        self.start_button: ttk.Button = ttk.Button(
+            button_frame,
+            text="START",
+            command=self._start_game,  # Replace with the correct callback
+            width=10,
+        )
+        self.start_button.grid(row=0, column=0, padx=10, pady=10)
+
+        # RULES button
+        self.rules_button: ttk.Button = ttk.Button(
+            button_frame,
+            text="RULES",
+            command=self._show_rules,  # Replace with the correct callback
+            width=10,
+        )
+        self.rules_button.grid(row=0, column=1, padx=10, pady=10)
+
+        # CREDITS button
+        self.credits_button: ttk.Button = ttk.Button(
+            button_frame,
+            text="CREDITS",
+            command=self._show_credits,  # Replace with the correct callback
+            width=10,
+        )
+        self.credits_button.grid(row=0, column=2, padx=10, pady=10)
+
+        # Configure columns in the button frame for even spacing
+        button_frame.grid_columnconfigure(0, weight=1)
+        button_frame.grid_columnconfigure(1, weight=1)
+        button_frame.grid_columnconfigure(2, weight=1)
 
     def _add_leaderboard_title(self) -> None:
         """Add the leaderboard title to the UI."""
@@ -279,14 +326,26 @@ class Flappy:
 
     def _start_game(self) -> None:
         """Start the game by opening the user form."""
-        user_form_root: tk.Toplevel = tk.Toplevel(self.root)
-        UserForm(user_form_root, self._process_user_input)
+        root: tk.Toplevel = tk.Toplevel(self.root)
+        UserForm(root, self._process_user_input)
+
+    def _show_rules(self) -> None:
+        """Start the game by opening the user form."""
+        root: tk.Toplevel = tk.Toplevel(self.root)
+        show_rules_popup(root)
+
+    def _show_credits(self) -> None:
+        """Start the game by opening the user form."""
+        root: tk.Toplevel = tk.Toplevel(self.root)
+        show_credits_popup(root)
 
     def _process_user_input(self, user_data: Dict[str, Any]) -> None:
         """Process user input and update the leaderboard."""
         self.root.withdraw()
         try:
+            self.music_player.stop()
             score: int = run_game()
+            self.music_player.play()
             user_data["Score"] = score
             self.leaderboard_data = _manage_leaderboard(user_data)
         finally:

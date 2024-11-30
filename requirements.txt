@@ -6,3 +6,4 @@ opencv-python
 openpyxl
 pandas
 pillow
+pyaudio

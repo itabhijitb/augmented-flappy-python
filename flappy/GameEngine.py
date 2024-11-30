@@ -1,13 +1,14 @@
 import time
 import pygame
 import cv2 as cv
+from pygame import SurfaceType
+from pygame.mixer import SoundType
+from pygame.rect import RectType
 
-from flappy.util import center_window
+from flappy.LoadingBar import LoadingBar
 from flappy.Bird import Bird
 from flappy.Pipes import Pipes
 from flappy.FaceTracker import FaceTracker
-import tkinter as tk
-from tkinter import ttk
 from flappy.constants import (
     ICON,
     LOGO_IMAGE_PATH,
@@ -16,44 +17,20 @@ from flappy.constants import (
     GAME_OVER_LOGO_PATH)
 
 
-class LoadingBar:
-    def __init__(self):
-        self.root = tk.Tk()
-        self.root.title("Loading Game......")
-
-        self.root.geometry("400x150")
-        center_window(self.root, 400, 150)
-        # Create a progress bar
-        self.progress_bar = ttk.Progressbar(self.root, orient="horizontal", length=300, mode="determinate")
-        self.progress_bar.pack(pady=10)
-        # Add a label
-        self.message_label = tk.Label(self.root, text="Initializing.....")
-        self.message_label.pack(pady=10)
-        self.progress_bar["maximum"] = 100
-
-    def __call__(self, value, message):
-        self.progress_bar["value"] = value
-        self.progress_bar.update()
-        self.message_label.config(text=message)
-        if value >= 100:
-            self.message_label.config(text="Task Completed! Starting in 3 seconds...")
-            self.root.after(3000, self.root.destroy)
-
 class GameEngine:
     def __init__(self):
-        self.loading_bar = LoadingBar()
+        self.loading_bar: LoadingBar = LoadingBar()
         pygame.init()
         self.loading_bar(10, "Loading assets...")
-        self.crash_sound = pygame.mixer.Sound(CRASH_SOUND)
-        icon = pygame.image.load(ICON)
-        pygame.display.set_icon(icon)
+        self.crash_sound: SoundType = pygame.mixer.Sound(CRASH_SOUND)
+        pygame.display.set_icon(pygame.image.load(ICON))
         info_object = pygame.display.Info()
         self.window_size = (
             info_object.current_w,
             info_object.current_h
         )
-        self.logo = pygame.image.load(LOGO_IMAGE_PATH)
-        self.font = pygame.font.SysFont("Helvetica Bold", 30)
+        self.logo: SurfaceType = pygame.image.load(LOGO_IMAGE_PATH)
+        self.font = pygame.font.SysFont("Helvetica Bold", 40)
         scaled_width = int(self.window_size[0] * 0.25)
         scaled_height = int(self.window_size[1] * 0.25)
         self.game_over_logo = pygame.transform.scale(pygame.image.load(GAME_OVER_LOGO_PATH),
@@ -61,9 +38,9 @@ class GameEngine:
         self.loading_bar(20, "Setting up face tracker...")
         self.face_tracker = FaceTracker()
         self.loading_bar(50, "Determining camera resolution...")
-        self.loading_bar(60, "Setting screen resolution...")
         self.face_tracker.video_capture.set(cv.CAP_PROP_FRAME_WIDTH, info_object.current_w)
         self.face_tracker.video_capture.set(cv.CAP_PROP_FRAME_HEIGHT, info_object.current_h)
+        self.loading_bar(60, "Setting screen resolution...")
         camera_resolution = (
             self.face_tracker.video_capture.get(cv.CAP_PROP_FRAME_WIDTH),
             self.face_tracker.video_capture.get(cv.CAP_PROP_FRAME_HEIGHT),
@@ -73,8 +50,6 @@ class GameEngine:
             self.window_size = camera_resolution
             self.screen = pygame.display.set_mode(self.window_size, pygame.NOFRAME)
         else:
-            self.face_tracker.video_capture.set(cv.CAP_PROP_FRAME_WIDTH, info_object.current_w)
-            self.face_tracker.video_capture.set(cv.CAP_PROP_FRAME_HEIGHT, info_object.current_h)
             self.screen = pygame.display.set_mode(self.window_size)
         self.loading_bar(80, "Initializing game components...")
         pygame.display.set_caption("Flappy Bird with Face Tracking")
@@ -94,21 +69,38 @@ class GameEngine:
         self.start_time = time.time()  # Track game start time
         self.countdown_duration = 2 * 60  # Countdown timer: 2 minutes
 
-
-
     def display_text(self, text, position, color=(0, 0, 0)):
         rendered_text = self.font.render(text, True, color)
         rect = rendered_text.get_rect(center=position)
         self.screen.blit(rendered_text, rect)
 
-
     def check_collisions(self):
+        def pixel_perfect_collision(rect1: RectType, rect2: RectType, surface1: SurfaceType, surface2: SurfaceType):
+            """
+            Check for pixel-perfect collision between two rectangles.
+            rect1, rect2: pygame.Rect objects for the two rectangles.
+            surface1, surface2: pygame.Surface objects for the two images.
+            """
+            # Create masks for each surface
+            mask1 = pygame.mask.from_surface(surface1)
+            mask2 = pygame.mask.from_surface(surface2)
+
+            # Calculate the offset between the two rectangles
+            offset = (rect2.x - rect1.x, rect2.y - rect1.y)
+
+            # Check if masks overlap
+            return mask1.overlap(mask2, offset) is not None
+
         for top, bottom in self.pipes.pipes:
             if self.bird.rect.colliderect(top) or self.bird.rect.colliderect(bottom):
-                pygame.mixer.music.stop()
-                self.crash_sound.play()
-                self.running = False
-                return
+                # Perform pixel-perfect collision detection
+                if pixel_perfect_collision(self.bird.rect, top, self.bird.frame, self.pipes.top_image) or \
+                        pixel_perfect_collision(self.bird.rect, bottom, self.bird.frame, self.pipes.bottom_image):
+                    # Handle collision
+                    pygame.mixer.music.stop()
+                    self.crash_sound.play()
+                    self.running = False
+                    return
 
     def update_score(self):
         checker = True
@@ -118,8 +110,8 @@ class GameEngine:
                 if not self.did_update_score:
                     self.score += 1
                     self.did_update_score = True
-            self.screen.blit(self.pipes.pipe_image, bottom)
-            self.screen.blit(pygame.transform.flip(self.pipes.pipe_image, False, True), top)
+            self.screen.blit(self.pipes.bottom_image, bottom)
+            self.screen.blit(pygame.transform.flip(self.pipes.bottom_image, False, True), top)
         if checker:
             self.did_update_score = False
 
@@ -129,21 +121,19 @@ class GameEngine:
         minutes = int(remaining_time // 60)
         seconds = int(remaining_time % 60)
         timer_text = f"{minutes:02}:{seconds:02}"
-        self.display_text(f"Timer: {timer_text}", (self.window_size[0] - 150, 100),(176,20,41))
+        self.display_text(f"Timer: {timer_text}", (self.window_size[0] - 150, 100), (176, 20, 41))
 
         if remaining_time == 0:
-            pygame.mixer.music.stop()
-            self.crash_sound.play()
             self.running = False
 
     def game_over_screen(self):
-        logo_rect = self.game_over_logo.get_rect(center=(self.window_size[0] // 2, self.window_size[1] // 2 ))
+        logo_rect = self.game_over_logo.get_rect(center=(self.window_size[0] // 2, self.window_size[1] // 2))
         self.screen.blit(self.game_over_logo, logo_rect)
-        self.display_text(f"Score: {self.score}", (self.window_size[0] // 2, self.window_size[1] // 2 + 25),
-                          (176,20,41))
+        self.display_text(f"Score: {self.score}", (self.window_size[0] // 2, self.window_size[1] // 2 + 50),
+                          (176, 20, 41))
 
-        self.display_text("Press any key to Continue", (self.window_size[0] // 2, self.window_size[1] // 2 + 75),
-                          (176,20,41))
+        self.display_text("Press any key to Continue", (self.window_size[0] // 2, self.window_size[1] // 2 + 150),
+                          (176, 20, 41))
         pygame.display.flip()
 
         while True:
@@ -190,8 +180,8 @@ class GameEngine:
             self.bird.draw(self.screen)
             self.pipes.draw(self.screen)
 
-            self.display_text(f"Score: {self.score}", (100, 50),(176,20,41))
-            self.display_text(f"Stage: {self.stage}", (100, 100),(176,20,41))
+            self.display_text(f"Score: {self.score}", (100, 50), (176, 20, 41))
+            self.display_text(f"Stage: {self.stage}", (100, 100), (176, 20, 41))
 
             if time.time() - self.last_stage_time > 10:
                 self.stage += 1
@@ -221,6 +211,7 @@ def run_game():
     finally:
         game.cleanup()
     return score
+
 
 if __name__ == "__main__":
     run_game()

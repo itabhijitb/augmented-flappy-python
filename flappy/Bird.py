@@ -1,16 +1,19 @@
 from PIL import Image, ImageSequence
 from collections import namedtuple
 import pygame
+from pygame.rect import RectType
+
 from flappy.constants import SPRITE_BIRD
 
+IMAGE = namedtuple('image', ['frame', 'rect'])
 class Bird:
     window_size = None
 
-    IMAGE = namedtuple('image', ['frame', 'rect'])
-    def __init__(self, window_size):
+
+    def __init__(self, window_size: tuple[int, int]):
         Bird.window_size = window_size
         self.current_frame = 0
-        self.images = Bird.__loadGIF(SPRITE_BIRD)
+        self.images: list[IMAGE] = Bird.__loadGIF(SPRITE_BIRD)
         self.frame_count = len(self.images)
 
 
@@ -20,20 +23,20 @@ class Bird:
         return pygame.image.fromstring(data, size, mode).convert_alpha()
 
     @staticmethod
-    def __loadGIF(filename):
-        def make_frame(image):
+    def __loadGIF(filename) -> list[IMAGE]:
+        def make_frame(image) -> IMAGE:
             pygame_image = pygame.transform.scale(Bird.__pilImageToSurface(image), (100, 73))
             rect = pygame.transform.scale(Bird.__pilImageToSurface(image), (100, 20)).get_rect()
             rect.center = (Bird.window_size[0] // 6, Bird.window_size[1] // 2)
-            return Bird.IMAGE(pygame_image, rect)
+            return IMAGE(pygame_image, rect)
 
-        pilImage = Image.open(filename)
-        frames = []
-        if pilImage.format == 'GIF' and pilImage.is_animated:
-            for frame in ImageSequence.Iterator(pilImage):
+        pil_image: Image = Image.open(filename)
+        frames: list[IMAGE] = []
+        if pil_image.format == 'GIF' and pil_image.is_animated:
+            for frame in ImageSequence.Iterator(pil_image):
                 frames.append(make_frame(frame.convert('RGBA')))
         else:
-            frames.append(make_frame(pilImage))
+            frames.append(make_frame(pil_image))
         return frames
 
     def move(self, pos):
@@ -46,5 +49,9 @@ class Bird:
         self.current_frame = (self.current_frame + 1) % self.frame_count
 
     @property
-    def rect(self):
+    def rect(self)->RectType:
         return self.images[self.current_frame].rect
+
+    @property
+    def frame(self):
+        return self.images[self.current_frame].frame
