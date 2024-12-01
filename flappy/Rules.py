@@ -1,16 +1,8 @@
 import tkinter as tk
-from tkinter import ttk
-from screeninfo import get_monitors
 
 from Popup import Popup
-from flappy.util import center_window
-from flappy.constants import CONSOLE_BLUE
 
-
-
-
-def show_rules_popup(root):
-    rules = """
+RULES = """
 1. Objective:
    - Control the pterodactyl to avoid as many pipes as possible and achieve 
      the highest score within 2 minutes.
@@ -56,7 +48,11 @@ def show_rules_popup(root):
 9. Game Over:
    - Colliding with a pipe ends the game immediately.
 """
-    app = Popup(root, "Rules", rules)
+
+
+def show_rules_popup(root):
+    rules = RULES
+    Popup(root, "Rules", rules)
     root.mainloop()
 
 

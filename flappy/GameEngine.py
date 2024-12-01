@@ -30,7 +30,7 @@ class GameEngine:
             info_object.current_h
         )
         self.logo: SurfaceType = pygame.image.load(LOGO_IMAGE_PATH)
-        self.font = pygame.font.SysFont("Helvetica Bold", 40)
+        self.font = pygame.font.SysFont("Helvetica Bold", 30)
         scaled_width = int(self.window_size[0] * 0.25)
         scaled_height = int(self.window_size[1] * 0.25)
         self.game_over_logo = pygame.transform.scale(pygame.image.load(GAME_OVER_LOGO_PATH),
@@ -129,10 +129,10 @@ class GameEngine:
     def game_over_screen(self):
         logo_rect = self.game_over_logo.get_rect(center=(self.window_size[0] // 2, self.window_size[1] // 2))
         self.screen.blit(self.game_over_logo, logo_rect)
-        self.display_text(f"Score: {self.score}", (self.window_size[0] // 2, self.window_size[1] // 2 + 50),
+        self.display_text(f"Score: {self.score}", (self.window_size[0] // 2, self.window_size[1] // 2 + 30),
                           (176, 20, 41))
 
-        self.display_text("Press any key to Continue", (self.window_size[0] // 2, self.window_size[1] // 2 + 150),
+        self.display_text("Press any key to Continue", (self.window_size[0] // 2, self.window_size[1] // 2 + 75),
                           (176, 20, 41))
         pygame.display.flip()
 

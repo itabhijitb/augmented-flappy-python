@@ -10,13 +10,13 @@ class Pipes:
     DISTANCE_BETWEEN = 500
     SPACE_BETWEEN = 250
 
-    def __init__(self, window_size:tuple[int, int]):
+    def __init__(self, window_size:tuple):
         self.scale = window_size[1] / 1328
         self.bottom_image: SurfaceType = pygame.transform.scale_by(pygame.image.load(SPRITE_PIPES), self.scale)
         self.top_image: SurfaceType = pygame.transform.flip(self.bottom_image, True, False)
         self.rect: RectType = self.bottom_image.get_rect()
         self.window_size = window_size
-        self.pipes: deque[tuple[RectType, RectType]] = deque()
+        self.pipes: deque[tuple] = deque()
         self.spawn_timer = 0
         self.spawn_interval = 40
 

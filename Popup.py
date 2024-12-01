@@ -13,14 +13,14 @@ class Popup:
 
         # Configure window dimensions based on display resolution
         monitor = get_monitors()[0]
-        self.window_width = monitor.width // 2
-        self.window_height = monitor.height // 2
+        self.window_width = int(monitor.width // 1.5)
+        self.window_height = int(monitor.height // 1.5)
         center_window(self.root, self.window_width, self.window_height)
         self.root.geometry(f"{self.window_width}x{self.window_height}")
         self.root.resizable(False, False)
 
         # Calculate dynamic font size based on screen resolution
-        self.base_font_size = self.window_width // 52
+        self.base_font_size = self.window_width // 65
         self.font = ("Courier", self.base_font_size, "bold")  # Retro console style with monospaced font
 
         # Create UI elements
@@ -57,7 +57,7 @@ class Popup:
 
         # Main Frame for content
         main_frame = ttk.Frame(self.root, style="TFrame")
-        main_frame.place(x=20, y=20, width=self.window_width - 40, height=self.window_height - 80)
+        main_frame.place(x=20, y=30, width=self.window_width - 40, height=self.window_height - 100)
 
         # Add scrollbar
         scrollbar = ttk.Scrollbar(main_frame, orient=tk.VERTICAL)
@@ -92,7 +92,7 @@ class Popup:
             command=self.on_ok,
             style="TButton",
         )
-        ok_button.place(x=self.window_width // 2 - 50, y=self.window_height - 50, width=100, height=30)
+        ok_button.place(x=self.window_width // 2 - 50, y=self.window_height - 75, width=100, height=50)
 
     def on_ok(self):
         # Close the popup

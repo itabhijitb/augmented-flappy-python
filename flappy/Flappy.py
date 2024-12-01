@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import ttk
-
 from PIL import Image, ImageTk
 import pandas as pd
 from typing import List, Optional, Dict, Any
@@ -176,7 +175,8 @@ class Flappy:
         def resize_logo(event: tk.Event) -> None:
             """Resize the logo based on the current window size."""
             # Avoid resizing if the window dimensions are too small
-            if event.width < 200 or event.height < 200:
+
+            if event.width < 200 or event.height < 200 or str(event.widget) != '.':
                 return
 
             try:

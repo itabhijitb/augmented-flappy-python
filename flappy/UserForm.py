@@ -33,9 +33,6 @@ class UserForm:
         # Create UI elements
         self.create_widgets()
 
-        # Add drag functionality for the custom window
-        self.add_drag_functionality()
-
 
     def create_widgets(self):
         # Create a canvas to draw the rectangle
@@ -61,7 +58,7 @@ class UserForm:
             bg=CONSOLE_BLUE,
             fg="white",
         )
-        player_label.place(relx=0.5, y=0, x=-200, anchor="n")
+        player_label.place(relx=0.5, y=0, x=-190, anchor="n")
 
         # Main Frame for content
         main_frame = tk.Frame(canvas, bg=CONSOLE_BLUE)
@@ -184,19 +181,6 @@ class UserForm:
         # Close the application without submitting data
         self.root.destroy()
 
-    def add_drag_functionality(self):
-        # Enable dragging the custom window
-        def start_drag(event):
-            self.x_offset = event.x
-            self.y_offset = event.y
-
-        def do_drag(event):
-            x = self.root.winfo_pointerx() - self.x_offset
-            y = self.root.winfo_pointery() - self.y_offset
-            self.root.geometry(f"+{x}+{y}")
-
-        self.root.bind("<Button-1>", start_drag)
-        self.root.bind("<B1-Motion>", do_drag)
 
 
 def run_user_form():
@@ -204,7 +188,7 @@ def run_user_form():
         messagebox.showinfo("User Data", f"Collected Data:\n{user_data}")
 
     root = tk.Tk()
-    app = UserForm(root, display_user_data)
+    UserForm(root, display_user_data)
     root.mainloop()
 
 

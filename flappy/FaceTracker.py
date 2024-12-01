@@ -14,6 +14,10 @@ class FaceTracker:
             binary_graph_path=mediapipe_resource_path
         )
         self.video_capture = cv.VideoCapture(0, cv.CAP_DSHOW)
+        print((
+            self.video_capture.get(cv.CAP_PROP_FRAME_WIDTH),
+            self.video_capture.get(cv.CAP_PROP_FRAME_HEIGHT),
+        ))
 
     def get_face_position(self):
         ret, frame = self.video_capture.read()

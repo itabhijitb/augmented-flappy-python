@@ -2,15 +2,12 @@ import tkinter as tk
 
 from Popup import Popup
 
-
-
-def show_credits_popup(root):
-    credits_content = """
+CREDITS = """
     Programmer: Aditya Bhattacharjee
     
     Sponsor: New Horizon Public School
     
-    Mentors: Laxmi Ma'am, Susan Ma'am
+    Mentors: Lakhsmi Ma'am, Susan Ma'am
     
     Music Credit: Jurassic Park Theme Song
     
@@ -42,6 +39,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
     """
+
+
+def show_credits_popup(root):
+    credits_content = CREDITS
     Popup(root, "Credits", credits_content)
     root.mainloop()
 

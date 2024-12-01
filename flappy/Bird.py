@@ -10,28 +10,28 @@ class Bird:
     window_size = None
 
 
-    def __init__(self, window_size: tuple[int, int]):
+    def __init__(self, window_size: tuple):
         Bird.window_size = window_size
         self.current_frame = 0
-        self.images: list[IMAGE] = Bird.__loadGIF(SPRITE_BIRD)
+        self.images: list = Bird.__load_gif(SPRITE_BIRD)
         self.frame_count = len(self.images)
 
 
     @staticmethod
-    def __pilImageToSurface(pilImage):
-        mode, size, data = pilImage.mode, pilImage.size, pilImage.tobytes()
+    def __pil_image_to_surface(pil_image):
+        mode, size, data = pil_image.mode, pil_image.size, pil_image.tobytes()
         return pygame.image.fromstring(data, size, mode).convert_alpha()
 
     @staticmethod
-    def __loadGIF(filename) -> list[IMAGE]:
+    def __load_gif(filename) -> list:
         def make_frame(image) -> IMAGE:
-            pygame_image = pygame.transform.scale(Bird.__pilImageToSurface(image), (100, 73))
-            rect = pygame.transform.scale(Bird.__pilImageToSurface(image), (100, 20)).get_rect()
+            pygame_image = pygame.transform.scale(Bird.__pil_image_to_surface(image), (100, 73))
+            rect = pygame.transform.scale(Bird.__pil_image_to_surface(image), (100, 20)).get_rect()
             rect.center = (Bird.window_size[0] // 6, Bird.window_size[1] // 2)
             return IMAGE(pygame_image, rect)
 
         pil_image: Image = Image.open(filename)
-        frames: list[IMAGE] = []
+        frames: list = []
         if pil_image.format == 'GIF' and pil_image.is_animated:
             for frame in ImageSequence.Iterator(pil_image):
                 frames.append(make_frame(frame.convert('RGBA')))
